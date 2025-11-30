@@ -1,47 +1,367 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Resume Summarizer</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Summarizer Pro</title>
     <style>
-        body { font-family: Arial; margin: 40px; }
-        textarea { width: 100%; height: 180px; margin-bottom: 20px; }
-        button { padding: 10px 20px; font-size: 16px; }
-        #result { white-space: pre-wrap; margin-top: 20px; font-size: 18px; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.1rem;
+        }
+
+        .textarea-wrapper {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 200px;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+            transition: all 0.3s ease;
+            background: #fafafa;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        textarea::placeholder {
+            color: #999;
+        }
+
+        .char-count {
+            text-align: right;
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .button-container {
+            text-align: center;
+        }
+
+        .summarize-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 16px 40px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .summarize-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .summarize-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .summarize-btn.loading {
+            pointer-events: none;
+            opacity: 0.8;
+        }
+
+        .summarize-btn.loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            margin: -10px 0 0 -10px;
+            border: 2px solid transparent;
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result-section {
+            margin-top: 40px;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .result-label {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .result-label::after {
+            content: '';
+            flex: 1;
+            height: 2px;
+            background: linear-gradient(90deg, #667eea, transparent);
+        }
+
+        .result-box {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 25px;
+            min-height: 120px;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #2c3e50;
+            transition: all 0.3s ease;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .result-box.loading {
+            background: #f8f9fa url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" stroke="%23667eea" stroke-width="8" fill="none" stroke-dasharray="60 40"/></svg>') no-repeat center;
+            background-size: 50px;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 0.8; }
+        }
+
+        .result-box.success {
+            border-color: #28a745;
+            background: #f8fff9;
+        }
+
+        .result-box.error {
+            border-color: #dc3545;
+            background: #fff8f8;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9rem;
+            border-top: 1px solid #e0e0e0;
+            background: #f8f9fa;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 20px 10px;
+            }
+            
+            .header {
+                padding: 30px 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .content {
+                padding: 30px 20px;
+            }
+        }
     </style>
 </head>
 <body>
+    <div class="container">
+        <div class="header">
+            <h1>📄 Resume Summarizer</h1>
+            <p>AI-Powered Professional Summary Generator</p>
+        </div>
 
-<h2>Resume Summarizer (Local FLAN-T5)</h2>
+        <div class="content">
+            <div class="input-section">
+                <label class="input-label" for="inputText">Paste Resume Text:</label>
+                <div class="textarea-wrapper">
+                    <textarea 
+                        id="inputText" 
+                        placeholder="Enter or paste the resume content here... The AI will generate a professional 3-sentence summary tailored for recruiters."
+                    ></textarea>
+                </div>
+                <div class="char-count">
+                    <span id="charCount">0</span> characters
+                </div>
+            </div>
 
-<textarea id="inputText" placeholder="Paste resume text here"></textarea>
-<button onclick="sendText()">Summarize</button>
+            <div class="button-container">
+                <button class="summarize-btn" onclick="sendText()">
+                    🚀 Generate Summary
+                </button>
+            </div>
 
-<h3>Summary:</h3>
-<div id="result"></div>
+            <div class="result-section">
+                <div class="result-label">
+                    <span>📋 Professional Summary</span>
+                </div>
+                <div class="result-box" id="result">
+                    Your AI-generated summary will appear here...
+                </div>
+            </div>
+        </div>
 
-<script>
-async function sendText() {
-    let text = document.getElementById("inputText").value;
+        <div class="footer">
+            Powered by Local FLAN-T5 Model • Professional Resume Analysis
+        </div>
+    </div>
 
-    try {
-        let response = await fetch("http://127.0.0.1:8000/summarize", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text: text })
+    <script>
+        const inputText = document.getElementById('inputText');
+        const charCount = document.getElementById('charCount');
+        const resultDiv = document.getElementById('result');
+        const button = document.querySelector('.summarize-btn');
+
+        // Character count update
+        inputText.addEventListener('input', function() {
+            charCount.textContent = this.value.length;
         });
 
-        if (!response.ok) {
-            throw new Error("Server error: " + response.status);
+        async function sendText() {
+            let text = inputText.value.trim();
+
+            if (!text) {
+                showResult('Please enter some resume text to summarize.', 'error');
+                return;
+            }
+
+            // UI state updates
+            button.classList.add('loading');
+            button.innerHTML = 'Processing...';
+            resultDiv.className = 'result-box loading';
+            resultDiv.innerHTML = '';
+
+            try {
+                let response = await fetch("http://127.0.0.1:8000/summarize", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ text: text })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+
+                let result = await response.json();
+                showResult(result.summary, 'success');
+            } 
+            catch (err) {
+                showResult(`Error: ${err.message}`, 'error');
+            }
+            finally {
+                // Reset button state
+                button.classList.remove('loading');
+                button.innerHTML = '🚀 Generate Summary';
+            }
         }
 
-        let result = await response.json();
-        document.getElementById("result").innerText = result.summary;
-    } 
-    catch (err) {
-        document.getElementById("result").innerText = "Error: " + err.message;
-    }
-}
-</script>
+        function showResult(message, type) {
+            resultDiv.className = `result-box ${type}`;
+            resultDiv.textContent = message;
+            
+            // Add smooth appearance
+            resultDiv.style.animation = 'none';
+            setTimeout(() => {
+                resultDiv.style.animation = 'fadeIn 0.6s ease-out';
+            }, 10);
+        }
 
+        // Add some interactive effects
+        inputText.addEventListener('focus', function() {
+            this.parentElement.style.transform = 'scale(1.02)';
+        });
+
+        inputText.addEventListener('blur', function() {
+            this.parentElement.style.transform = 'scale(1)';
+        });
+    </script>
 </body>
 </html>
