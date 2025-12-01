@@ -85,7 +85,7 @@ def generate_summary(raw_text):
         print(f"🔧 Cleaned text length: {len(cleaned_text)}")
         prompt = (
             "Generate a concise, 2-3 sentence professional summary highlighting key skills. "
-            "Act as a Senior Recruiter writing a candidate profile based on the following resume text: "+ cleaned_text
+            "Provide quantifiable experience for a recruiter based on the following resume text: "+ cleaned_text
             
             
             # "Act as a Senior Recruiter writing a candidate profile. "
